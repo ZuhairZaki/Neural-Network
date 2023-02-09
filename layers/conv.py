@@ -1,7 +1,7 @@
 import numpy as np
 
 class Convolutionlayer:
-    def __init__(self, filter_size, num_channels, num_filters, padding=0, stride=1, learning_rate=0.01):
+    def __init__(self, filter_size, num_channels, num_filters, padding=0, stride=1, learning_rate=0.001):
         self.filter_size = filter_size
         self.num_channels = num_channels
         self.num_filters = num_filters
@@ -32,7 +32,7 @@ class Convolutionlayer:
         return self.output
 
     
-    def backward(self, dL_dout, outfile):
+    def backward(self, dL_dout):
         dL_dout_changed = dL_dout
 
         padding = self.filter_size - 1 if self.padding == 0 else self.padding
@@ -53,21 +53,8 @@ class Convolutionlayer:
         dL_dfilters = np.einsum('bcijkl, bnij->nckl', self.input_regions, dL_dout)
         dL_dinput = np.einsum('bnijkl, nckl->bcij', dL_dout_regions, rotated_filters)
 
-        outfile.write('Convolution backward\n')
-        # outfile.write('self.input: ' + str(self.input) + '\n')
-        outfile.write('self.filters: ' + str(self.filters) + '\n')
-        # outfile.write('self.bias: ' + str(self.bias) + '\n')
-        # outfile.write('self.output: ' + str(self.output) + '\n')
-        # # outfile.write('dL_dout: ' + str(dL_dout.shape) + '\n')
-        # # outfile.write('dL_db: ' + str(dL_db.shape) + '\n')
-        # # outfile.write('dL_dfilters: ' + str(dL_dfilters.shape) + '\n')
-        # # outfile.write('dL_dinput: ' + str(dL_dinput.shape) + '\n')
-
         self.filters -= self.learning_rate * dL_dfilters
         self.bias -= self.learning_rate * dL_db
-
-        outfile.write('self.filters: ' + str(self.filters) + '\n')
-        # outfile.write('self.bias: ' + str(self.bias) + '\n')
 
         return dL_dinput
         

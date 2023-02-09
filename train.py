@@ -5,10 +5,10 @@ from layers.flat import Flattening
 from layers.linear import FullyConnected
 from layers.softmax import Softmax
 from utils import DataLoader
+from utils import load_test_set
 from tqdm import tqdm
 import numpy as np
-
-debug_file = open('debug.txt', 'w')
+import pickle
 
 class NeuralNetwork:
     def __init__(self, layers):
@@ -23,11 +23,10 @@ class NeuralNetwork:
     def backward(self, y):
         y_backward = y
         for layer in reversed(self.layers):
-            y_backward = layer.backward(y_backward,debug_file)
-
+            y_backward = layer.backward(y_backward)
 
 def main():
-    train_set = 'training-a'
+    train_set = ['training-a','training-b','training-c']
 
     epochs = 10
     batch_size = 64
@@ -59,21 +58,22 @@ def main():
 
     nn = NeuralNetwork(layers)
 
-    data_loader = DataLoader(train_set)
+    training_data = [ 
+        DataLoader(train_set[0]),
+        DataLoader(train_set[1]),
+        DataLoader(train_set[2])
+    ]
+
     for epoch in tqdm(range(epochs)):
-        debug_file.write('Epoch: ' + str(epoch) + '\n\n')
-        for batch in tqdm(range(0, len(data_loader.data), batch_size)):
-            X_train, Y_train = data_loader.load_minibatch(batch, batch_size)
-            y_pred = nn.forward(X_train)
-            nn.backward(Y_train)
+        print('\nEpoch: %d\n' % (epoch+1))
+        for i in range(len(training_data)):
+            print('\nTraining on %s\n' % train_set[i])
+            for batch in tqdm(range(0, len(training_data[i].data), batch_size)):
+                X_train, Y_train = training_data[i].load_minibatch(batch, batch_size)
+                y_pred = nn.forward(X_train)
+                nn.backward(Y_train)
 
-    
-    X_test, img_list = data_loader.load_test_set('E:/ML/testing-b/')
-    y_pred = nn.forward(X_test)
-    y_pred = np.argmax(y_pred, axis=1)
-
-    for i in range(len(y_pred)):
-        print(img_list[i], y_pred[i])
+    pickle.dump(nn, open('model.pkl', 'wb'))
 
 if __name__ == '__main__':
     main()

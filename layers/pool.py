@@ -25,7 +25,7 @@ class Pooling:
         return self.output
 
 
-    def backward(self, dL_dout, outfile):
+    def backward(self, dL_dout):
         self.dL_dinput = np.zeros(self.input.shape)
 
         for i in range(self.output_height):
@@ -38,11 +38,5 @@ class Pooling:
                 elif self.pool == 'avg':
                     mask = np.ones((self.num_images, self.num_channels, self.filter_size, self.filter_size))
                     self.dL_dinput[:, :, i*self.stride:i*self.stride+self.filter_size, j*self.stride:j*self.stride+self.filter_size] += mask*dL_dout[:, :, i:i+1, j:j+1] / (self.filter_size * self.filter_size)
-
-        # outfile.write('Pooling backward\n')
-        # outfile.write('self.input: ' + str(self.input) + '\n')
-        # outfile.write('self.output: ' + str(self.output) + '\n')
-        # outfile.write('dL_dout: ' + str(dL_dout) + '\n')
-        # outfile.write('self.dL_dinput: ' + str(self.dL_dinput) + '\n')
 
         return self.dL_dinput
